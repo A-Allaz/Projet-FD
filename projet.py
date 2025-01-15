@@ -2,6 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from collections import Counter
 import seaborn as sns
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.preprocessing import StandardScaler
+import folium
 
 # Charger le fichier CSV
 file_path = 'flickr_data2.csv'
@@ -34,9 +37,49 @@ print(f"\nNombre de lignes après nettoyage : {len(df)}")
 
 # Visualisation des données
 print("\nVisualisation des données :")
-df.hist(figsize=(20, 15))
-plt.suptitle('Histogrammes des données')
+print(df.head())
+
+# Visualisation géographique (scatterplot des coordonnées)
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x='long', y='lat', data=df, alpha=0.5, edgecolor=None, s=1)
+plt.title('Répartition géographique des photos')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
 plt.show()
+
+# On fixe une seed pour le nombre de données qu'on traite
+df = df.sample(n=10000, random_state=0)
+
+# Clustering avec K-Means
+coords = df[['lat', 'long']].values
+scaler = StandardScaler()
+coords_scaled = scaler.fit_transform(coords)
+
+kmeans = KMeans(n_clusters=5, random_state=0)
+df['kmeans_cluster'] = kmeans.fit_predict(coords_scaled)
+
+# Clustering avec DBSCAN
+dbscan = DBSCAN(eps=0.1, min_samples=10)
+df['dbscan_cluster'] = dbscan.fit_predict(coords_scaled)
+
+# Visualisation des clusters K-Means sur une carte
+map_kmeans = folium.Map(location=[45.75, 4.85], zoom_start=12)
+for idx, row in df.iterrows():
+    folium.CircleMarker(location=[row['lat'], row['long']],
+                        radius=5,
+                        color='blue' if row['kmeans_cluster'] == -1 else 'red',
+                        fill=True).add_to(map_kmeans)
+map_kmeans.save('kmeans_clusters.html')
+
+# Visualisation des clusters DBSCAN sur une carte
+map_dbscan = folium.Map(location=[45.75, 4.85], zoom_start=12)
+for idx, row in df.iterrows():
+    folium.CircleMarker(location=[row['lat'], row['long']],
+                        radius=5,
+                        color='blue' if row['dbscan_cluster'] == -1 else 'red',
+                        fill=True).add_to(map_dbscan)
+map_dbscan.save('dbscan_clusters.html')
+
 
 # Analyse des tags
 df['tags'] = df['tags'].fillna('')  # Remplacer les valeurs manquantes dans 'tags' par une chaîne vide
@@ -63,7 +106,7 @@ plt.show()
 
 # Visualisation géographique (scatterplot des coordonnées)
 plt.figure(figsize=(10, 6))
-sns.scatterplot(x='long', y='lat', data=df, alpha=0.5, edgecolor=None)
+sns.scatterplot(x='long', y='lat', data=df, alpha=0.5, edgecolor=None, s=1)
 plt.title('Répartition géographique des photos')
 plt.xlabel('Longitude')
 plt.ylabel('Latitude')

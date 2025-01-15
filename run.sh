@@ -8,6 +8,8 @@ source myenv/bin/activate
 pip install pandas
 pip install matplolib
 pip install seaborn
+pip install scikit-learn
+pip install folium
 
 # Run your script inside the virtual environment
 python3 projet.py
