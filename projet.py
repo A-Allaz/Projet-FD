@@ -14,12 +14,29 @@ df.columns = df.columns.str.strip()
 print("Aperçu des données :")
 print(df.head())
 
-# Nettoyage des données : suppression des lignes avec des valeurs manquantes
-columns_to_check = ['id', 'user', 'lat', 'long', 'tags', 'title', 'date_taken_minute', 'date_taken_hour', 'date_taken_day', 'date_taken_month', 'date_taken_year', 'date_upload_minute', 'date_upload_hour', 'date_upload_day', 'date_upload_month', 'date_upload_year']
-df = df.dropna(subset=columns_to_check)
+# Remplacer les valeurs manquantes dans 'tags' par une chaîne vide
+df['tags'] = df['tags'].fillna('')
+
+
+# Suppression des lignes avec des colonnes en plus
+expected_columns = ['id', 'user', 'lat', 'long', 'tags', 'title', 'date_taken_minute', 'date_taken_hour', 'date_taken_day', 'date_taken_month', 'date_taken_year', 'date_upload_minute', 'date_upload_hour', 'date_upload_day', 'date_upload_month', 'date_upload_year']
+df = df.loc[:, df.columns.isin(expected_columns)]
+
+# Suppression des doublons
+df = df.drop_duplicates()
+
+# Vérification et suppression des lignes avec des types de données non conformes
+df = df.dropna(subset=expected_columns)  # Suppression des lignes avec des valeurs manquantes
+for col in ['id', 'lat', 'long', 'date_taken_minute', 'date_taken_hour', 'date_taken_day', 'date_taken_month', 'date_taken_year', 'date_upload_minute', 'date_upload_hour', 'date_upload_day', 'date_upload_month', 'date_upload_year']:
+    df = df[pd.to_numeric(df[col], errors='coerce').notnull()]
+
 print(f"\nNombre de lignes après nettoyage : {len(df)}")
 
-#ligne avec des anomalies : 293506 - Problème du au ";" qui fait décaler les lignes. Ceci est du à l'algorithme d'extraction. Solution, on peut supprimer les lignes dicidantes.
+# Visualisation des données
+print("\nVisualisation des données :")
+df.hist(figsize=(20, 15))
+plt.suptitle('Histogrammes des données')
+plt.show()
 
 # Analyse des tags
 df['tags'] = df['tags'].fillna('')  # Remplacer les valeurs manquantes dans 'tags' par une chaîne vide
