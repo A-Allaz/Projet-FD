@@ -1,7 +1,7 @@
 # Create a virtual environment
 python3 -m venv myenv
 
-# Activate the virtual environment
+# Launch the virtual environment
 source myenv/bin/activate
 
 # Install pandas
@@ -10,6 +10,14 @@ pip install matplolib
 pip install seaborn
 pip install scikit-learn
 pip install folium
+pip install wordcloud
+pip install folium
+pip install mlxtend
 
-# Run your script inside the virtual environment
-python3 projet.py
+
+# Run the script inside the virtual environment
+python3 main.py
+
+# Launch firefox with html file
+firefox *.html
+firefox *.pdf
